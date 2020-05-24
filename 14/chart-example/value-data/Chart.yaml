@@ -1,0 +1,4 @@
+apiVersion: v1
+description: My First Web Chart - NGINX
+name: web
+version: 0.1.0

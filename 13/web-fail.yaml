@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webfailure
+  labels:
+    app: webfailure
+  namespace: betatest
+spec:
+  containers:
+  - name: main
+    image: centos
+    command: ["/bin/sleep", "999999"]

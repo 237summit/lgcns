@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-2
+spec:
+  containers:
+  - name: sec-ctx-demo-2
+    image: smlinux/node-hello:1.0

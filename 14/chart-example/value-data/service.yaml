@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: "{{ .Release.Name }}"
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"  
+  name: "{{ .Release.Name }}"
+  namespace: default
+  resourceVersion: "3066"
+spec:
+  clusterIP:
+  externalTrafficPolicy: Cluster
+  ports:
+  - nodePort: 30254
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: "{{ .Release.Name }}"
+  sessionAffinity: None
+  type: "{{ .Values.service.type }}"
+status:
+  loadBalancer: {}
+

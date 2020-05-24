@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: netpolicy1
+spec:
+  podSelector:
+    matchLabels:
+      app: webserver
+## webtest에서만 80포트로 연결허용.
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: webtest
+    ports:
+    - port: 80
