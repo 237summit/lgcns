@@ -31,3 +31,143 @@ spec:
       secretName: tls-secret
   rule:
   
+  
+## SOLUTION  : web-server
+1. PVC
+  apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: web-pvc
+spec:
+  storageClassName: nfs-storageclass 
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 10Gi
+      
+2. deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      name: nginx-pod
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx:1.14
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: html
+          mountPath: /usr/share/nginx/html
+          readOnly: true
+      volumes:
+      - name: html
+        persistentVolumeClaim:
+          claimName: web-pvc
+
+3. Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: webserver
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30100
+  selector:
+    app: web
+    
+4. curl node1.example.com:30100
+===========================================
+Helm example
+
+# curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > get_helm.sh
+# chmod 700 get_helm.sh
+# ./get_helm.sh
+
+# kubectl -n kube-system create serviceaccount tiller
+# kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+# helm init --service-account=tiller
+
+# kubectl get pods -n kube-system
+
+-저장소 정보를 업그레이드
+# helm repo update
+# helm repo list
+
+- 저장소를 추가
+# helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
+# helm repo list
+# helm version
+
+- 패키지 검색
+# helm search
+# helm search mysql
+# helm search redis
+# helm inspect stable/mysql
+
+- mysql 설치
+# helm install --name mysql \
+   --set mysqlRootPassword=pass,mysqlUser=mysql,mysqlPassword=work,mysqlDatabase=mydatabase,persistence.storageClass=nfs-storageclass \
+   stable/mysql
+
+# kubectl get pods
+# kubectl get pvc
+# kubectl get pv
+# MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace default mysql -o jsonpath="{.data.mysql-root-password}" | base64 --decode; echo)
+
+# echo $MYSQL_ROOT_PASSWORD 
+
+- 클라이언트 pod를 생성하여 mysql 서버로 접속하고 간단한 db 쿼리를 실행
+# kubectl run -it clientpod --image=ubuntu:18.04 -- /bin/bash 
+/# apt-get update && apt-get install mysql-client -y
+/# mysql -h mysql -p
+Enter password: pass
+mysql> show databases;
+mysql> use mydatabase;
+mysql> show tables
+mysql> exit
+/# exit
+
+- 헬름 패키지 정보를 확인
+# helm ls
+# helm delete mysql
+# helm ls --all
+# helm rollback mysql 1
+# helm delete --purge mysql
+
+
+- Chart 생성
+# helm fetch stable/redis
+# ls
+# tar -zxvf redis-10.5.7.tgz
+# tree redis
+
+# vim redis/values.yaml
+redis password를 “mypassword”로 storageclass를 “nfs-storageclass”
+
+Chart.yaml  일에 있는 version을 0.1.0로 변경
+# vim redis/Chart.yaml
+
+# helm install ./redis
+# helm ls
+
+등록한 helm 패키지의 내용 확인
+# kubectl get all
+# kubectl get pvc
+# kubectl get pv
+# kubectl get secret
+# kubectl get secret busted-lobster-redis -o  jsonpath="{.data.redis-password}" | base64 --decode
