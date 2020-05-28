@@ -171,3 +171,33 @@ Chart.yaml  일에 있는 version을 0.1.0로 변경
 # kubectl get pv
 # kubectl get secret
 # kubectl get secret busted-lobster-redis -o  jsonpath="{.data.redis-password}" | base64 --decode
+
+
+-helm 저장소 만들기 : chartmuseum
+# curl -LO https://s3.amazonaws.com/chartmuseum/release/latest/bin/linux/amd64/chartmuseum
+# chmod +x ./chartmuseum
+# mv ./chartmuseum /usr/local/bin
+# chartmuseum --debug --port=8080 \
+  --storage="local" \
+  --storage-local-rootdir="./chartstorage" &
+
+master.example.com:8080 
+# curl http://master.example.com:8080/api/charts
+
+# helm package redis
+# curl --data-binary "@redis-0.1.0.tgz" http://localhost:8080/api/charts 
+# curl http://localhost:8080/api/charts
+# ls chartstorage/
+
+- 차트 뮤지엄을 새로운 helm 저장소로 추가
+# helm repo add chartmuseum http://localhost:8080
+# helm search chartmuseum
+# helm install chartmuseum/redis
+
+# helm delete --purge xxxx
+# helm ls --all
+
+
+
+
+
