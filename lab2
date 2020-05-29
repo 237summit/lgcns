@@ -34,3 +34,4 @@ vi fortune-volume-cm-secret.yaml
 
 
 2. Deploy
+kubectl patch deployment app -p '{"spec": {"minReadySeconds": 10}}'
