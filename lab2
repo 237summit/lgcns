@@ -36,3 +36,11 @@ vi fortune-volume-cm-secret.yaml
 2. Deploy
 kubectl create -f deployment.yaml  --record
 kubectl patch deployment app -p '{"spec": {"minReadySeconds": 10}}'
+
+kubectl set image deployment app-deploy app-container=smlinux/app:v2 --record
+
+kubectl rollout history deployment app-deploy
+kubectl rollout status deployment app-deploy
+
+kubectl rollout undo deployment app-deploy --to-revision=1
+kubectl get deployment app-deploy -o yaml | grep -i history
