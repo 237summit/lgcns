@@ -1,0 +1,36 @@
+1. configmap and secret
+mkdir secret
+cd secret
+openssl genrsa -out https.key 2048
+openssl req -new -x509 -key https.key -out https.crt -days 365 -subj /CN=www.example.com
+echo "hello" > data.file
+cat data.file
+
+kubectl create secret generic fortune-https --from-file=secret
+kubectl get secret
+
+kubectl describe secret fortune-https
+kubectl get secret fortune-https -o yaml
+kubectl edit cm fortune-config
+server {
+    listen              80;
+    listen              443 ssl;
+    server_name         www.example.com;
+    ssl_certificate     certs/https.cert;
+    ssl_certificate_key certs/https.key;
+    ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers         HIGH:!aNULL:!MD5;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+
+}
+
+vi fortune-volume-cm-secret.yaml
+# curl -k https://10.42.0.18:443
+# curl -k https://10.42.0.18:443 -v
+
+
+2. Deploy
